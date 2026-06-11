@@ -1,0 +1,83 @@
+<main class="page">
+  <section class="panel">
+    <header class="panel__header">
+      <div>
+        <p class="eyebrow">Account MVP</p>
+        <h1>Accounts</h1>
+      </div>
+      <button type="button" class="secondary" (click)="startCreate()">New account</button>
+    </header>
+
+    @if (error()) {
+      <p class="alert">{{ error() }}</p>
+    }
+
+    <form class="form" [formGroup]="accountForm" (ngSubmit)="saveAccount()">
+      <label>
+        <span>Account holder name</span>
+        <input type="text" formControlName="accountHolderName" />
+      </label>
+
+      <label>
+        <span>Account number</span>
+        <input type="text" formControlName="accountNumber" />
+      </label>
+
+      <label>
+        <span>Balance</span>
+        <input type="number" step="0.01" formControlName="balance" />
+      </label>
+
+      <label>
+        <span>Currency</span>
+        <input type="text" formControlName="currency" />
+      </label>
+
+      <div class="actions">
+        <button type="submit" [disabled]="accountForm.invalid">
+          {{ editingId() === null ? 'Create account' : 'Save changes' }}
+        </button>
+        @if (editingId() !== null) {
+          <button type="button" class="secondary" (click)="cancelEdit()">Cancel</button>
+        }
+      </div>
+    </form>
+
+    @if (loading()) {
+      <p class="muted">Loading accounts...</p>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Holder</th>
+              <th>Number</th>
+              <th class="right">Balance</th>
+              <th>Currency</th>
+              <th class="right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (account of accounts(); track account.id) {
+              <tr>
+                <td>{{ account.accountHolderName }}</td>
+                <td>{{ account.accountNumber }}</td>
+                <td class="right">{{ account.balance | number: '1.2-2' }}</td>
+                <td>{{ account.currency }}</td>
+                <td class="right">
+                  <button type="button" class="secondary" (click)="startEdit(account)">Edit</button>
+                  <button type="button" class="danger" (click)="deleteAccount(account)">Delete</button>
+                </td>
+              </tr>
+            }
+            @empty {
+              <tr>
+                <td colspan="5" class="empty">No accounts yet.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</main>

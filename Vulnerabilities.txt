@@ -1,0 +1,19 @@
+1) Backend Dockerfile (trivy scan):
+    FROM openjdk:17 (deprecated image)
+2) application.properties:
+    exposed api key (gitleaks)
+3) pom.xml:
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.1</version>
+        </dependency>
+        (trivy SCA)
+4) AccountServiceImpl:
+    SQL Injection vulnerability in getAccountById method:
+        @Override
+        public Account getAccountById(int id) {
+            String sql = "SELECT * FROM accounts WHERE id = " + id;
+            return jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<>(Account.class));
+        }
+    (Semgrep + ZAP)
