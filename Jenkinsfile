@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+            HARBOR_URL = 'localhost:8082'
+            HARBOR_PROJECT = 'library'
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -23,6 +28,24 @@ pipeline {
                 }
             }
         }
+
+        stage ('Build and push Docker images to harbor') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'harbor-credentials', usernameVariable: 'HARBOR_USER', passwordVariable: 'HARBOR_PASS')]) {
+                    sh '''
+                        echo $HARBOR_PASS | docker login $HARBOR_URL -u $HARBOR_USER --password-stdin
+
+                        docker build -t $HARBOR_URL/$HARBOR_PROJECT/account-service-backend:latest .
+                        docker push $HARBOR_URL/$HARBOR_PROJECT/account-service-backend:latest
+
+                        cd frontend
+                        docker build -t $HARBOR_URL/$HARBOR_PROJECT/account-service-frontend:latest .
+                        docker push $HARBOR_URL/$HARBOR_PROJECT/account-service-frontend:latest
+                    '''
+                }
+
+        }
+
     }
 
     post {
