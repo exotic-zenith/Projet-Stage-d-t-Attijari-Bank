@@ -47,10 +47,19 @@ pipeline {
 
         }
 
+        stage('Gate 1: Gitleaks Secrets Scan') {
+            steps {
+                sh 'gitleaks detect --source . --report-format json --report-path gitleaks-report.json --verbose || true'
+            }
+        }
+
     }
+
+
 
     post {
         always {
+            archiveArtifacts artifacts: 'gitleaks-report.json', allowEmptyArchive: true
             echo 'Pipeline finished'
         }
         failure {
