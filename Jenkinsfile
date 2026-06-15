@@ -15,14 +15,14 @@ pipeline {
             }
         }
 
-        //stage('Build Frontend') {
-        //    steps {
-        //        dir('frontend') {
-        //            sh 'npm install'
-        //            sh 'npm run build'
-        //        }
-        //    }
-        //}
+        stage('Build Frontend') {
+            steps {
+                dir('frontend') {
+                    sh 'npm install'
+                    sh 'npm run build'
+                }
+            }
+        }
     }
 
     post {
