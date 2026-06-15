@@ -43,6 +43,7 @@ pipeline {
                         docker push $HARBOR_URL/$HARBOR_PROJECT/account-service-frontend:latest
                     '''
                 }
+            }
 
         }
 
