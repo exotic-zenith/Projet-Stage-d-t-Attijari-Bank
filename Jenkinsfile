@@ -53,13 +53,19 @@ pipeline {
             }
         }
 
+        stage('Gate 2: Semgrep SAST Scan') {
+            steps {
+                sh 'semgrep --config=auto --json --output=semgrep-report.json . || true'
+            }
+        }
+
     }
 
 
 
     post {
         always {
-            archiveArtifacts artifacts: 'gitleaks-report.json', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'gitleaks-report.json, semgrep-report.json', allowEmptyArchive: true
             echo 'Pipeline finished'
         }
         failure {
