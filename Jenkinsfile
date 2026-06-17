@@ -65,13 +65,20 @@ pipeline {
             }
         }
 
+        stage('Gate 4: Trivy Image Scan') {
+            steps {
+                sh 'trivy image --format json --output trivy-image-backend-report.json $HARBOR_URL/$HARBOR_PROJECT/account-service-backend:latest || true'
+                sh 'trivy image --format json --output trivy-image-frontend-report.json $HARBOR_URL/$HARBOR_PROJECT/account-service-frontend:latest || true'
+            }
+        }
+
     }
 
 
 
     post {
         always {
-            archiveArtifacts artifacts: 'gitleaks-report.json, semgrep-report.json, trivy-sca-report.json', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'gitleaks-report.json, semgrep-report.json, trivy-sca-report.json, trivy-image-backend-report.json, trivy-image-frontend-report.json', allowEmptyArchive: true
             echo 'Pipeline finished'
         }
         failure {
