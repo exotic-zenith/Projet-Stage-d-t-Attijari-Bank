@@ -59,13 +59,19 @@ pipeline {
             }
         }
 
+        stage('Gate 3: Trivy SCA Scan') {
+            steps {
+                sh 'trivy fs --scanners vuln --format json --output trivy-sca-report.json . || true'
+            }
+        }
+
     }
 
 
 
     post {
         always {
-            archiveArtifacts artifacts: 'gitleaks-report.json, semgrep-report.json', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'gitleaks-report.json, semgrep-report.json, trivy-sca-report.json', allowEmptyArchive: true
             echo 'Pipeline finished'
         }
         failure {
