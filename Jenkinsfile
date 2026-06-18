@@ -84,7 +84,7 @@ pipeline {
                     echo 'Waiting for backend to be reachable...'
                     sh '''
                         for i in $(seq 1 30); do
-                            if curl -s http://172.17.0.1:8081:8081/api/accounts > /dev/null 2>&1; then
+                            if curl -s http://172.17.0.1:8081/api/accounts > /dev/null 2>&1; then
                                 echo "Backend is up!"
                                 break
                             fi
@@ -108,7 +108,7 @@ pipeline {
                             -v $(pwd)/zap-report:/zap/wrk:rw \
                             --user $(id -u):$(id -g) \
                             ghcr.io/zaproxy/zaproxy:stable \
-                            zap-baseline.py \
+                            zap-full-scan.py \
                             -t http://172.17.0.1:8081 \
                             -r zap-report.html \
                             -J zap-report.json \
@@ -117,7 +117,7 @@ pipeline {
 
                     // Stop the app
                     echo 'Stopping application containers...'
-                    sh 'docker-compose down'
+                    sh 'docker compose down'
                 }
             }
         }
