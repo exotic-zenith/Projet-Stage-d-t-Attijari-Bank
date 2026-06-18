@@ -84,7 +84,7 @@ pipeline {
                     echo 'Waiting for backend to be reachable...'
                     sh '''
                         for i in $(seq 1 30); do
-                            if curl -s http://localhost:8080/api/accounts > /dev/null 2>&1; then
+                            if curl -s http://localhost:8081/api/accounts > /dev/null 2>&1; then
                                 echo "Backend is up!"
                                 break
                             fi
@@ -99,9 +99,10 @@ pipeline {
                         docker run --rm \
                             --network host \
                             -v $(pwd)/zap-report:/zap/wrk:rw \
+                            --user $(id -u):$(id -g) \
                             ghcr.io/zaproxy/zaproxy:stable \
                             zap-baseline.py \
-                            -t http://localhost:8080 \
+                            -t http://localhost:8081 \
                             -r zap-report.html \
                             -J zap-report.json \
                             -I
