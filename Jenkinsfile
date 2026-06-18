@@ -112,7 +112,7 @@ pipeline {
                     sh 'docker-compose down'
                 }
             }
-
+        }
     }
 
 
@@ -126,5 +126,4 @@ pipeline {
             echo 'Build failed – check console output'
         }
     }
-}
 }
