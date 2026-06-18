@@ -4,6 +4,7 @@ pipeline {
     environment {
             HARBOR_URL = 'localhost:8082'
             HARBOR_PROJECT = 'library'
+            APP_PORT = '8081'
     }
 
     stages {
@@ -72,13 +73,53 @@ pipeline {
             }
         }
 
+        stage('Gate 5: OWASP ZAP DAST Scan') {
+            steps {
+                script {
+                    // Start the app with docker-compose
+                    echo 'Starting application containers for ZAP scan...'
+                    sh 'docker compose up -d'
+
+                    // Wait for backend to be ready
+                    echo 'Waiting for backend to be reachable...'
+                    sh '''
+                        for i in $(seq 1 30); do
+                            if curl -s http://localhost:8080/api/accounts > /dev/null 2>&1; then
+                                echo "Backend is up!"
+                                break
+                            fi
+                            echo "Waiting... ($i/30)"
+                            sleep 2
+                        done
+                    '''
+
+                    // Run ZAP baseline scan
+                    echo 'Running OWASP ZAP scan...'
+                    sh '''
+                        docker run --rm \
+                            --network host \
+                            -v $(pwd)/zap-report:/zap/wrk:rw \
+                            ghcr.io/zaproxy/zaproxy:stable \
+                            zap-baseline.py \
+                            -t http://localhost:8080 \
+                            -r zap-report.html \
+                            -J zap-report.json \
+                            -I
+                    '''
+
+                    // Stop the app
+                    echo 'Stopping application containers...'
+                    sh 'docker-compose down'
+                }
+            }
+
     }
 
 
 
     post {
         always {
-            archiveArtifacts artifacts: 'gitleaks-report.json, semgrep-report.json, trivy-sca-report.json, trivy-image-backend-report.json, trivy-image-frontend-report.json', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'gitleaks-report.json, semgrep-report.json, trivy-sca-report.json, trivy-image-backend-report.json, trivy-image-frontend-report.json, zap-report.html, zap-report.json', allowEmptyArchive: true
             echo 'Pipeline finished'
         }
         failure {

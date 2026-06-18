@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  backend:
+    image: localhost:8082/library/account-service-backend:latest
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+
+  frontend:
+    image: localhost:8082/library/account-service-frontend:latest
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
