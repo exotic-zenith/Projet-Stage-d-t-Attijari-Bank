@@ -78,8 +78,7 @@ pipeline {
                 script {
                     // Start the app with docker-compose
                     echo 'Starting application containers for ZAP scan...'
-                    sh 'docker compose up -d'
-
+                    sh 'docker compose -f docker-compose.zap.yml up -d'
                     // Wait for backend to be ready
                     echo 'Waiting for backend to be reachable...'
                     sh '''
@@ -92,6 +91,13 @@ pipeline {
                             sleep 2
                         done
                     '''
+
+                    // Debug: Verify app is running
+                    sh 'echo "=== Running containers ===" && docker ps'
+                    sh 'echo "=== Testing app endpoint ===" && curl -v http://localhost:8081/api/accounts || echo "APP NOT REACHABLE"'
+
+                    // Create report directory with proper permissions
+                    sh 'rm -rf zap-report && mkdir -p zap-report && chmod 777 zap-report'
 
                     // Run ZAP baseline scan
                     echo 'Running OWASP ZAP scan...'
