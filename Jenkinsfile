@@ -79,11 +79,12 @@ pipeline {
                     // Start the app with docker-compose
                     echo 'Starting application containers for ZAP scan...'
                     sh 'docker compose -f docker-compose.zap.yml up -d'
+
                     // Wait for backend to be ready
                     echo 'Waiting for backend to be reachable...'
                     sh '''
                         for i in $(seq 1 30); do
-                            if curl -s http://localhost:8081/api/accounts > /dev/null 2>&1; then
+                            if curl -s http://172.17.0.1:8081:8081/api/accounts > /dev/null 2>&1; then
                                 echo "Backend is up!"
                                 break
                             fi
@@ -94,7 +95,7 @@ pipeline {
 
                     // Debug: Verify app is running
                     sh 'echo "=== Running containers ===" && docker ps'
-                    sh 'echo "=== Testing app endpoint ===" && curl -v http://localhost:8081/api/accounts || echo "APP NOT REACHABLE"'
+                    sh 'echo "=== Testing app endpoint ===" && curl -v http://172.17.0.1:8081/api/accounts || echo "APP NOT REACHABLE"'
 
                     // Create report directory with proper permissions
                     sh 'rm -rf zap-report && mkdir -p zap-report && chmod 777 zap-report'
@@ -108,7 +109,7 @@ pipeline {
                             --user $(id -u):$(id -g) \
                             ghcr.io/zaproxy/zaproxy:stable \
                             zap-baseline.py \
-                            -t http://localhost:8081 \
+                            -t http://172.17.0.1:8081 \
                             -r zap-report.html \
                             -J zap-report.json \
                             -I
