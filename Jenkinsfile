@@ -105,8 +105,8 @@ pipeline {
                     sh '''
                         docker run --rm \
                             --network host \
+                            --user root \
                             -v $(pwd)/zap-report:/zap/wrk:rw \
-                            --user $(id -u):$(id -g) \
                             ghcr.io/zaproxy/zaproxy:stable \
                             zap-full-scan.py \
                             -t http://172.17.0.1:8081 \
