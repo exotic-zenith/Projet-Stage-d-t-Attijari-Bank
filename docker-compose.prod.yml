@@ -6,7 +6,7 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_PROFILES_ACTIVE=prod
 
   frontend:
     image: localhost:8082/library/account-service-frontend:latest
