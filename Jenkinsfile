@@ -123,31 +123,21 @@ pipeline {
         }
 
 
-        stage('Deployment') {
+        stage('Deploy to Production') {
             when {
-                // Only deploy if all previous stages succeeded
                 expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
             }
             steps {
-                echo 'Deploying application from Harbor registry...'
-                sh '''
-                    # Login to Harbor
-                    echo $HARBOR_PASS | docker login $HARBOR_URL -u $HARBOR_USER --password-stdin
-
-                    # Pull latest scanned images
-                    docker pull $HARBOR_URL/$HARBOR_PROJECT/account-service-backend:latest
-                    docker pull $HARBOR_URL/$HARBOR_PROJECT/account-service-frontend:latest
-
-                    # Stop old production containers
-                    docker compose -f docker-compose.prod.yml down || true
-
-                    # Start production deployment
-                    docker compose -f docker-compose.prod.yml up -d
-
-                    echo "Deployment complete!"
-                    echo "Backend: http://localhost:8081"
-                    echo "Frontend: http://localhost:4200"
-                '''
+                withCredentials([usernamePassword(credentialsId: 'harbor-credentials', usernameVariable: 'HARBOR_USER', passwordVariable: 'HARBOR_PASS')]) {
+                    sh '''
+                        echo $HARBOR_PASS | docker login $HARBOR_URL -u $HARBOR_USER --password-stdin
+                        docker pull $HARBOR_URL/$HARBOR_PROJECT/account-service-backend:latest
+                        docker pull $HARBOR_URL/$HARBOR_PROJECT/account-service-frontend:latest
+                        docker compose -f docker-compose.prod.yml down || true
+                        docker compose -f docker-compose.prod.yml up -d
+                        echo "Deployed: http://localhost:8081"
+                    '''
+                }
             }
         }
     }
