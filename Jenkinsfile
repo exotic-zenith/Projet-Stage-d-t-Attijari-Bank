@@ -78,7 +78,7 @@ pipeline {
                 script {
                     // Start the app with docker-compose
                     echo 'Starting application containers for ZAP scan...'
-                    sh 'docker compose up -d'
+                    sh 'docker compose -f docker-compose.prod.yml up -d'
 
                     // Wait for backend to be ready
                     echo 'Waiting for backend to be reachable...'
@@ -135,7 +135,8 @@ pipeline {
                         docker pull $HARBOR_URL/$HARBOR_PROJECT/account-service-frontend:latest
                         docker compose -f docker-compose.prod.yml down || true
                         docker compose -f docker-compose.prod.yml up -d
-                        echo "Deployed: http://localhost:8081"
+                        echo "Deployed: Backend http://localhost:8081"
+                        echo "Deployed: Frontend http://localhost:4200"
                     '''
                 }
             }
