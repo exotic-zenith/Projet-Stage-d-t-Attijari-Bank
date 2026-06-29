@@ -50,26 +50,31 @@ pipeline {
 
         stage('Gate 1: Gitleaks Secrets Scan') {
             steps {
-                sh 'gitleaks detect --source . --report-format json --report-path gitleaks-report.json --verbose || true'
+                //sh 'gitleaks detect --source . --report-format json --report-path gitleaks-report.json --verbose || true'
+                sh 'gitleaks detect --source . --report-format json --report-path gitleaks-report.json --verbose'
             }
         }
 
         stage('Gate 2: Semgrep SAST Scan') {
             steps {
-                sh 'semgrep --config=auto --json --output=semgrep-report.json . || true'
+                //sh 'semgrep --config=auto --json --output=semgrep-report.json . || true'
+                sh 'semgrep --config=auto --json --output=semgrep-report.json .'
             }
         }
 
         stage('Gate 3: Trivy SCA Scan') {
             steps {
-                sh 'trivy fs --scanners vuln --format json --output trivy-sca-report.json . || true'
+                //sh 'trivy fs --scanners vuln --format json --output trivy-sca-report.json . || true'
+                sh 'trivy fs --scanners vuln --format json --output trivy-sca-report.json . '
             }
         }
 
         stage('Gate 4: Trivy Image Scan') {
             steps {
-                sh 'trivy image --format json --output trivy-image-backend-report.json $HARBOR_URL/$HARBOR_PROJECT/account-service-backend:latest || true'
-                sh 'trivy image --format json --output trivy-image-frontend-report.json $HARBOR_URL/$HARBOR_PROJECT/account-service-frontend:latest || true'
+                //sh 'trivy image --format json --output trivy-image-backend-report.json $HARBOR_URL/$HARBOR_PROJECT/account-service-backend:latest || true'
+                //sh 'trivy image --format json --output trivy-image-frontend-report.json $HARBOR_URL/$HARBOR_PROJECT/account-service-frontend:latest || true'
+                sh 'trivy image --format json --output trivy-image-backend-report.json $HARBOR_URL/$HARBOR_PROJECT/account-service-backend:latest '
+                sh 'trivy image --format json --output trivy-image-frontend-report.json $HARBOR_URL/$HARBOR_PROJECT/account-service-frontend:latest '
             }
         }
 
@@ -102,6 +107,19 @@ pipeline {
 
                     // Run ZAP baseline scan
                     echo 'Running OWASP ZAP scan...'
+                    //sh '''
+                    //    docker run --rm \
+                    //       --network host \
+                    //        --user root \
+                    //        -v $(pwd)/zap-report:/zap/wrk:rw \
+                    //        ghcr.io/zaproxy/zaproxy:stable \
+                    //        zap-full-scan.py \
+                    //        -t http://172.17.0.1:8081 \
+                    //        -r zap-report.html \
+                    //        -J zap-report.json \
+                    //        -I
+                    //'''
+
                     sh '''
                         docker run --rm \
                             --network host \
@@ -112,7 +130,6 @@ pipeline {
                             -t http://172.17.0.1:8081 \
                             -r zap-report.html \
                             -J zap-report.json \
-                            -I
                     '''
 
                     // Stop the app
